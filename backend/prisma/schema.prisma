@@ -1,0 +1,90 @@
+// Models use the tables already created in PostgreSQL.
+// Check constraints, triggers, and accept/cancel functions live in the first
+// migration. Prisma Client does not enforce those checks.
+// Accept a transfer by calling accept_transfer_request(), not by update().
+
+generator client {
+  provider        = "prisma-client"
+  output          = "../generated/prisma"
+  previewFeatures = ["partialIndexes"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Shopkeeper {
+  id           BigInt   @id @default(autoincrement())
+  name         String
+  email        String   @unique(map: "shopkeepers_email_unique")
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+  shop         Shop?
+
+  @@map("shopkeepers")
+}
+
+model Shop {
+  id                BigInt            @id @default(autoincrement())
+  shopkeeperId      BigInt            @unique(map: "shops_shopkeeper_unique") @map("shopkeeper_id")
+  name              String
+  address           String
+  imageUrl          String?           @map("image_url")
+  createdAt         DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime          @default(now()) @map("updated_at") @db.Timestamptz(6)
+  shopkeeper        Shopkeeper        @relation(fields: [shopkeeperId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "shops_shopkeeper_fk")
+  products          Product[]
+  sentTransfers     TransferRequest[] @relation("SentTransfers")
+  receivedTransfers TransferRequest[] @relation("ReceivedTransfers")
+
+  @@map("shops")
+}
+
+model Product {
+  id            BigInt            @id @default(autoincrement())
+  shopId        BigInt            @map("shop_id")
+  name          String
+  description   String            @default("")
+  quantity      Int
+  createdAt     DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime          @default(now()) @map("updated_at") @db.Timestamptz(6)
+  shop          Shop              @relation(fields: [shopId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "products_shop_fk")
+  transfersFrom TransferRequest[] @relation("SourceProduct")
+  transfersTo   TransferRequest[] @relation("DestinationProduct")
+
+  @@index([shopId], map: "products_shop_id_idx")
+  @@map("products")
+}
+
+model TransferRequest {
+  id                   BigInt         @id @default(autoincrement())
+  sourceProductId      BigInt         @map("source_product_id")
+  destinationProductId BigInt?        @map("destination_product_id")
+  sourceShopId         BigInt         @map("source_shop_id")
+  destinationShopId    BigInt?        @map("destination_shop_id")
+  quantity             Int
+  unitPrice            Decimal        @map("unit_price") @db.Decimal(12, 2)
+  totalPrice           Decimal?       @default(dbgenerated("((quantity)::numeric * unit_price)")) @map("total_price") @db.Decimal(20, 2)
+  status               TransferStatus @default(pending)
+  createdAt            DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  acceptedAt           DateTime?      @map("accepted_at") @db.Timestamptz(6)
+  sourceProduct        Product        @relation("SourceProduct", fields: [sourceProductId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transfer_requests_source_product_fk")
+  destinationProduct   Product?       @relation("DestinationProduct", fields: [destinationProductId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transfer_requests_destination_product_fk")
+  sourceShop           Shop           @relation("SentTransfers", fields: [sourceShopId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transfer_requests_source_shop_fk")
+  destinationShop      Shop?          @relation("ReceivedTransfers", fields: [destinationShopId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transfer_requests_destination_shop_fk")
+
+  @@index([destinationShopId], map: "transfer_requests_destination_shop_idx")
+  @@index([createdAt], map: "transfer_requests_pending_idx", where: raw("(status = 'pending'::transfer_status)"))
+  @@index([sourceShopId], map: "transfer_requests_source_shop_idx")
+  @@map("transfer_requests")
+}
+
+enum TransferStatus {
+  pending
+  accepted
+  rejected
+  cancelled
+
+  @@map("transfer_status")
+}
