@@ -37,6 +37,7 @@ model Shop {
   products          Product[]
   sentTransfers     TransferRequest[] @relation("SentTransfers")
   receivedTransfers TransferRequest[] @relation("ReceivedTransfers")
+  directOffers      TransferRequest[] @relation("DirectRecipient")
 
   @@map("shops")
 }
@@ -63,6 +64,7 @@ model TransferRequest {
   destinationProductId BigInt?        @map("destination_product_id")
   sourceShopId         BigInt         @map("source_shop_id")
   destinationShopId    BigInt?        @map("destination_shop_id")
+  recipientShopId      BigInt?        @map("recipient_shop_id")
   quantity             Int
   unitPrice            Decimal        @map("unit_price") @db.Decimal(12, 2)
   totalPrice           Decimal?       @default(dbgenerated("((quantity)::numeric * unit_price)")) @map("total_price") @db.Decimal(20, 2)
@@ -73,9 +75,11 @@ model TransferRequest {
   destinationProduct   Product?       @relation("DestinationProduct", fields: [destinationProductId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transfer_requests_destination_product_fk")
   sourceShop           Shop           @relation("SentTransfers", fields: [sourceShopId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transfer_requests_source_shop_fk")
   destinationShop      Shop?          @relation("ReceivedTransfers", fields: [destinationShopId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transfer_requests_destination_shop_fk")
+  recipientShop        Shop?          @relation("DirectRecipient", fields: [recipientShopId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transfer_requests_recipient_shop_fk")
 
   @@index([destinationShopId], map: "transfer_requests_destination_shop_idx")
   @@index([createdAt], map: "transfer_requests_pending_idx", where: raw("(status = 'pending'::transfer_status)"))
+  @@index([recipientShopId], map: "transfer_requests_recipient_shop_idx")
   @@index([sourceShopId], map: "transfer_requests_source_shop_idx")
   @@map("transfer_requests")
 }

@@ -1,5 +1,6 @@
 import {
   IsInt,
+  IsOptional,
   IsString,
   Matches,
   Min,
@@ -28,4 +29,9 @@ export class PublishTransferDto {
     },
   })
   unitPrice!: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d+$/, { message: 'recipientShopId must be a whole number' })
+  recipientShopId?: string;
 }

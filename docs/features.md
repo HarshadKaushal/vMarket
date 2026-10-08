@@ -21,7 +21,8 @@ Status is against the application that is in this repository, not against a plan
 | Offer search and sort | Filters by product name, source shop name, or description. Sorts by product name. |
 | Accept | Another shop only. Inserts a new destination product and decreases the source quantity. |
 | Cancel | Source shop only, and only while pending. Does not move stock. |
-| One winner | A second accept, or accept racing cancel, gets 409 once the first transaction commits. |
+| One winner | A second accept, or accept racing cancel or reject, gets 409 once the first transaction commits. |
+| Private offer | `POST /transfers` with `recipientShopId`. Pending rows are listed only for the sender and the invited shop. The invited shop accepts or rejects. The sender cancels. Other shops get 404. |
 | Two layers of input checks | Zod in the form, then Nest `ValidationPipe`. |
 | Password trim | Spaces around the password are removed in the form and in both DTOs. |
 | Nav after login | The nav refetches the profile. A Transfers page prefetched while logged out is not reused. |
@@ -32,7 +33,7 @@ Shop id, product id, and offer id in the API come from the cookie or from the ro
 
 | Feature | What exists | What does not |
 |---|---|---|
-| Transfer status `rejected` | The enum value is in PostgreSQL. | No function, route, or button sets it. Cancel is the only "stop" action. |
+| Transfer status `rejected` | Set only when the invited shop rejects a private offer. | A public board offer still has no reject button. |
 | Shop shelf page | The data and the route work. | `/shops/[shopId]` still uses the older list layout, not the shadcn cards. |
 | Search | It filters the list already on the page. The badge counts the full list. | There is no search query parameter and no database search. |
 | Dark theme variables | The shadcn preset generated them. | There is no theme switch. |
@@ -45,5 +46,4 @@ Shop id, product id, and offer id in the API come from the cookie or from the ro
 - Dockerfiles for the frontend and the backend, and a Compose file that runs all three.
 - A drawn ER diagram of the four tables that were actually built.
 - Automated tests for signup, login, product writes, publish, accept, cancel, and the double-accept case.
-- A decision on whether `rejected` should ever be set. Until that decision, it stays unused.
 - A data-fetching library. Pages still use `fetch`.

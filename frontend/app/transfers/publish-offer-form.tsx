@@ -20,7 +20,13 @@ import {
   publishTransferSchema,
 } from "@/lib/validation";
 
-export function PublishOfferForm({ products }: { products: ShelfProduct[] }) {
+export function PublishOfferForm({
+  products,
+  shops,
+}: {
+  products: ShelfProduct[];
+  shops: { id: string; name: string }[];
+}) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -35,6 +41,7 @@ export function PublishOfferForm({ products }: { products: ShelfProduct[] }) {
       productId: formText(data, "productId"),
       quantity: formText(data, "quantity"),
       unitPrice: formText(data, "unitPrice"),
+      recipientShopId: formText(data, "recipientShopId"),
     });
 
     if (!parsed.success) {
@@ -42,11 +49,20 @@ export function PublishOfferForm({ products }: { products: ShelfProduct[] }) {
       return;
     }
 
+    const payload = {
+      productId: parsed.data.productId,
+      quantity: parsed.data.quantity,
+      unitPrice: parsed.data.unitPrice,
+      ...(parsed.data.recipientShopId.length > 0
+        ? { recipientShopId: parsed.data.recipientShopId }
+        : {}),
+    };
+
     setPending(true);
     const response = await fetch("/api/transfers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(parsed.data),
+      body: JSON.stringify(payload),
     });
     setPending(false);
 
@@ -76,7 +92,7 @@ export function PublishOfferForm({ products }: { products: ShelfProduct[] }) {
             <h2 className="text-base font-semibold">Publish an offer</h2>
           </CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="offer-product">Product</Label>
             <select
@@ -106,6 +122,22 @@ export function PublishOfferForm({ products }: { products: ShelfProduct[] }) {
             />
           </div>
           <div className="flex flex-col gap-1.5">
+            <Label htmlFor="offer-recipient">Send to</Label>
+            <select
+              id="offer-recipient"
+              name="recipientShopId"
+              defaultValue=""
+              className="h-9 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              <option value="">Everyone on the open board</option>
+              {shops.map((shop) => (
+                <option key={shop.id} value={shop.id}>
+                  {shop.name} only
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col gap-1.5">
             <Label htmlFor="offer-price">Unit price</Label>
             <Input
               id="offer-price"
@@ -116,7 +148,7 @@ export function PublishOfferForm({ products }: { products: ShelfProduct[] }) {
             />
           </div>
           {error !== null ? (
-            <p className="text-sm text-destructive sm:col-span-3" role="alert">
+            <p className="text-sm text-destructive sm:col-span-2 lg:col-span-4" role="alert">
               {error}
             </p>
           ) : null}

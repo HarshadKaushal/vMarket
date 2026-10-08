@@ -115,11 +115,11 @@ The list can still show a request after someone else has accepted it. The next a
 
 **Assignment.** Create and accept. No decline and no withdraw.
 
-**What we do.** `cancel_transfer_request` sets a pending row to `cancelled` and frees the reserved quantity. `rejected` is a status value with no function. No screen sets it.
+**What we do.** `cancel_transfer_request` sets a pending row to `cancelled` and frees the reserved quantity. A private offer can also be set to `rejected` by the invited shop. A public offer still cannot.
 
 **Why.** A board with only pending and accepted cannot record "the sender took it back" without deleting the row. Deleting destroys the history.
 
-**How we handled it.** Cancel updates the row only where status is still pending, in the same lock order as accept. One of them changes one row. The other changes zero rows. Cancel does not move stock. Whether the UI later offers `rejected` is still open. Until then, that value is unused.
+**How we handled it.** Cancel updates the row only where status is still pending, in the same lock order as accept. One of them changes one row. The other changes zero rows. Cancel does not move stock. `reject_transfer_request` uses that same lock and the same pending check. It does not move stock either.
 
 ## 8. Bidding with a counter-price
 

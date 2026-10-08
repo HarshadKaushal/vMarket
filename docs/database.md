@@ -24,7 +24,7 @@ Design tables that can represent a request before anyone accepts it, and a compl
 
 Use four tables: **Shopkeeper**, **Shop**, **Product**, and **Transfer request**.
 
-This design is applied. Prisma's schema file lists the tables for TypeScript. The SQL migration is what PostgreSQL ran. Accept always inserts a new product row on the destination shop. Cancel is a database function. `rejected` is a status value, and no function sets it yet.
+This design is applied. Prisma's schema file lists the tables for TypeScript. The SQL migration is what PostgreSQL ran. Accept always inserts a new product row on the destination shop. Cancel is a database function. A later migration adds `recipient_shop_id` and `reject_transfer_request` for a private offer. A public offer still has no recipient and cannot be rejected.
 
 ### Reasons
 
@@ -38,7 +38,7 @@ This design is applied. Prisma's schema file lists the tables for TypeScript. Th
 ### Trade-offs
 
 - Accept does not look for an existing product with the same name. The destination shelf can show two rice rows. That is the cost of not racing two accepts on one name.
-- `rejected` and `cancelled` are not required by the PDF. Cancel is implemented, so a sender can take a pending offer back without deleting the row. `rejected` is only a value in the status list until a screen needs it.
+- `rejected` and `cancelled` are not required by the PDF. Cancel is implemented, so a sender can take a pending offer back without deleting the row. `rejected` is the invited shop's answer to a private offer.
 - Expiry is the business story and is not a column. No screen records it. Adding it later is a migration, not a silent redesign.
 - There is no Market table. Every shop in this database is in the one market the app serves.
 
@@ -60,7 +60,7 @@ This design is applied. Prisma's schema file lists the tables for TypeScript. Th
 3. **What alternatives exist.** The sample three-entity diagram, a single shopkeeper/shop table, and a separate history table for completed transfers.
 4. **What VMarket requires.** Shop listing, per-shop products, one shop per shopkeeper, export, accept, and a stored quantity movement.
 5. **Why it was selected.** The sample cannot represent a pending request or a shop distinct from a person. The four-table model can, without a market, expiry, or sales-history system the screens do not use.
-6. **What trade-offs it introduces.** Destination stock is always a new product row, so the same name can appear twice on one shelf. Cancel is stored. `rejected` is unused.
+6. **What trade-offs it introduces.** Destination stock is always a new product row, so the same name can appear twice on one shelf. Cancel is stored. `rejected` applies only to a private offer.
 
 ## Brainstorm
 
@@ -210,7 +210,7 @@ If a second accept runs, the status update matches zero rows because the request
 
 1. **Destination stock.** Accept inserts a new product row for the moved quantity. It does not add that quantity onto a product that already has the same name. Two accepts cannot both look up "Rice," both find nothing, and both insert. The destination shelf can show two rows named Rice.
 2. **Cancel.** `cancel_transfer_request` sets a pending row to `cancelled` and frees the reserved quantity. It does not move stock. Accept and cancel both require the row to still be pending, so only one of them wins.
-3. **Rejected.** The status exists so a request can end without moving stock. No function sets `rejected`. Whether a screen offers that action is still open, and it is listed in [README.md](README.md).
+3. **Rejected.** The invited shop of a private offer can set `rejected`. That does not move stock. A public offer has no recipient, so it cannot take this path.
 
 ## Left out on purpose
 

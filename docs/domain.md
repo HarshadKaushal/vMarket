@@ -14,7 +14,7 @@ This is a transfer of stock between shops. It is not a customer checkout, and it
 - Two product rows may share a name. Accept does not look for a matching name on the destination shelf.
 - The unit price is an asking price for that offer only. The product row has no price. A later offer of the same product may use another price.
 - Comparing offers is a person looking at the board. The software does not rank, negotiate, or auto-accept.
-- `rejected` was left on the status enum from the design discussion. No business action sets it. The sender cancels. The receiver either accepts or ignores the offer.
+- `rejected` is only for a private offer. The invited shop rejects it. A public board offer is not rejected. The sender cancels either kind.
 - Stock is a whole number of units. Money is a decimal with two places. Ids are bigints and travel as strings in JSON.
 
 ## Business rules
@@ -25,10 +25,11 @@ This is a transfer of stock between shops. It is not a customer checkout, and it
 | How much | A positive quantity. Pending quantities for that product, added together, cannot exceed the shelf. |
 | What happens to the shelf at publish | Nothing. The number stays until accept. The pending rows reserve it. |
 | Price | Greater than zero, chosen at publish, not edited later. Total is quantity times unit price, stored by the database. |
-| Who the offer is for | Nobody yet. `destination_shop_id` is null while the offer is pending. |
-| Who may accept | Any other shop. The source shop cannot accept its own offer. |
+| Who the offer is for | A public offer names nobody yet. `destination_shop_id` is null while it is pending. A private offer stores `recipient_shop_id` at publish and is not on the public board. |
+| Who may accept | A public offer: any other shop. A private offer: only the invited shop. The source shop cannot accept its own offer. |
 | What accept does | Status becomes `accepted`. A new product row is inserted on the destination shop with the transferred quantity. The source product quantity decreases by that amount. The destination product id is stored on the request. |
-| Who may cancel | The source shop, and only while the request is pending. Cancel does not move quantity. |
+| Who may cancel | The source shop, and only while the request is pending. Cancel does not move quantity. This is true for public and private offers. |
+| Who may reject | Only the invited shop of a private offer, and only while it is pending. Reject does not move quantity. A public offer has no reject. |
 | Accept and cancel together | Whichever transaction still sees `pending` wins. The other gets "no longer pending." |
 | Editing the shelf under an offer | Quantity cannot fall below the sum of pending offers for that product. |
 | Deleting a product | Refused while a pending offer points at it. Also refused after the product has been part of any transfer, because the old request row still points at it. |
