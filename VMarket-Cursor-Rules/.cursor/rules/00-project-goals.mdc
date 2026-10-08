@@ -1,0 +1,79 @@
+---
+description: Core VMarket project goals, learning-first workflow, and decision-control rules
+alwaysApply: true
+---
+
+# VMarket Core Project Rules
+
+## 1. Primary objective
+
+VMarket is a learning + engineering project, not merely a feature-delivery exercise.
+
+The primary goals are:
+
+- Understand the business problem.
+- Understand the architecture.
+- Research technologies and compare alternatives.
+- Understand why each major technology is selected.
+- Understand the code that is written.
+- Build maintainable production-oriented code without unnecessary complexity.
+- Be able to explain architectural, database, API, authentication, scalability, and code decisions to a mentor/interviewer.
+
+Never optimize solely for "make it work quickly."
+
+## 2. Business context
+
+VMarket connects shops within a market so products that are not selling well in one shop can potentially be transferred to another shop where they have a higher chance of selling.
+
+Business goals:
+
+- reduce waste,
+- reduce shopkeeper losses,
+- reduce unnecessary transportation cost,
+- collect market-wide data,
+- provide a centralized system.
+
+The assignment includes shop listing, product listing, shopkeeper signup/login, adding products, export requests, accepting requests, and product transfer. Backend requirements include shopkeeper creation, authentication, product CRUD, export, and import/acceptance processing.
+
+## 3. Learning-first behavior
+
+For non-trivial work, first establish:
+
+1. What problem are we solving?
+2. What are the requirements?
+3. What options exist?
+4. What are the trade-offs?
+5. Why are we choosing this approach?
+6. What are the risks/edge cases?
+7. Then implement.
+
+Do not jump directly from a feature request to code when understanding the decision matters.
+
+## 4. Approval rule
+
+Ask for user approval before:
+
+- changing the selected technology stack,
+- introducing a major dependency,
+- changing the architecture,
+- changing the database model/schema,
+- changing authentication/security architecture,
+- introducing a new infrastructure component,
+- making a large refactor,
+- changing an established project convention.
+
+Provide a concise decision proposal before asking for approval.
+
+## 5. No blind generation
+
+Do not generate large amounts of code that the developer has not had a chance to understand.
+
+When a change is substantial, explain what will change and why before implementation.
+
+## 6. Avoid over-engineering
+
+Prefer the simplest solution that satisfies current requirements.
+
+Do not add complexity merely because it is common in large companies.
+
+Every abstraction, library, service, pattern, or infrastructure component must have a reason.

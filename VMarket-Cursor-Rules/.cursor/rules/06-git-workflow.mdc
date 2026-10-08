@@ -1,0 +1,67 @@
+---
+description: Git branching, commits, reviewability, and project history
+alwaysApply: false
+---
+
+# Git Workflow
+
+The assignment expects regular commits, meaningful commit messages, and separate branches for different features where appropriate.
+
+## Branches
+
+Prefer a separate feature/fix branch for meaningful work.
+
+Examples:
+
+- `feature/shop-auth`
+- `feature/product-crud`
+- `feature/export-request`
+- `fix/transfer-race-condition`
+
+Do not create a branch for every tiny typo.
+
+## Commits
+
+Make commits:
+- focused,
+- small enough to understand,
+- logically coherent,
+- meaningful.
+
+Good:
+
+- `feat: add product creation endpoint`
+- `fix: prevent duplicate transfer acceptance`
+- `refactor: extract product validation service`
+- `test: cover transfer quantity validation`
+
+Avoid:
+
+- `changes`
+- `update`
+- `final`
+- `stuff`
+- `fixing things`
+
+## Do not rewrite history casually
+
+Do not reset, rebase, force-push, or delete branches containing user work without explicit approval.
+
+## Before committing
+
+Check:
+- changed files,
+- unintended changes,
+- secrets,
+- generated files,
+- formatting,
+- type errors,
+- tests/build where relevant.
+
+## Learning value
+
+Git history should tell the story of how the application was built.
+
+Do not manufacture commits to make history look a certain way.
+
+Commit the actual logical changes when practical.

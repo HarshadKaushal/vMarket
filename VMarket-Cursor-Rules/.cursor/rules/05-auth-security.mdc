@@ -1,0 +1,81 @@
+---
+description: Authentication, authorization, validation, secrets, and security rules
+alwaysApply: false
+---
+
+# Security Rules
+
+## Authentication vs authorization
+
+Always distinguish:
+
+Authentication:
+"Who are you?"
+
+Authorization:
+"What are you allowed to do?"
+
+Do not treat successful login as permission to perform every operation.
+
+## Authorization
+
+Every protected backend operation must verify the authenticated user's permissions.
+
+Do not rely on the frontend to enforce authorization.
+
+The frontend can hide UI, but the backend must enforce access control.
+
+## Credentials and secrets
+
+Never:
+- hardcode passwords,
+- hardcode JWT secrets,
+- commit API keys,
+- commit database passwords,
+- log authentication tokens,
+- expose secrets to the frontend.
+
+Use environment/configuration mechanisms appropriate to the application.
+
+## Input validation
+
+Treat all external input as untrusted.
+
+Validate:
+- request bodies,
+- query parameters,
+- route parameters,
+- uploaded files,
+- relevant headers.
+
+Validate both type/shape and business constraints.
+
+## Authentication data
+
+Passwords must never be stored in plaintext.
+
+Tokens and authentication mechanisms must be designed deliberately. Do not choose storage or token behavior merely because it is easy.
+
+When changing authentication architecture, stop and explain the security trade-offs before implementation.
+
+## Error messages
+
+Do not leak information unnecessarily.
+
+User-facing errors should be useful without exposing:
+- database internals,
+- stack traces,
+- secrets,
+- sensitive records,
+- authentication implementation details.
+
+## Security-sensitive changes
+
+Require explicit approval before making major changes to:
+- authentication strategy,
+- token storage,
+- authorization model,
+- password handling,
+- session architecture,
+- security middleware,
+- CORS/security policy.

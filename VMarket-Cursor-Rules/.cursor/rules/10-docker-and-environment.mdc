@@ -1,0 +1,64 @@
+---
+description: Docker, Compose, environment configuration, and reproducible development
+alwaysApply: false
+---
+
+# Docker and Environment Rules
+
+The assignment expects the frontend, backend, and PostgreSQL database to be containerized and composed with Docker Compose.
+
+## Docker
+
+Containers should be:
+- reproducible,
+- understandable,
+- appropriately configured for the environment.
+
+Do not add Docker complexity without a reason.
+
+## Environment variables
+
+Never commit secrets.
+
+Clearly distinguish:
+- development configuration,
+- test configuration,
+- production configuration.
+
+Document required environment variables without publishing secret values.
+
+## Compose
+
+Services should have clear responsibilities.
+
+At minimum, understand the relationship between:
+- frontend,
+- backend,
+- PostgreSQL.
+
+Do not hide networking/dependency assumptions.
+
+## Development vs production
+
+Do not assume that a development Docker setup is automatically suitable for production.
+
+When optimizing for production, explain the differences:
+- build process,
+- runtime image,
+- secrets,
+- database persistence,
+- health checks,
+- logging,
+- networking,
+- scaling.
+
+## Database persistence
+
+A database container is not a backup strategy.
+
+If persistence/backup is discussed, distinguish:
+- container lifecycle,
+- database volume,
+- backup,
+- restore,
+- disaster recovery.

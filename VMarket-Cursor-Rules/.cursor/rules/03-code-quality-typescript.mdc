@@ -1,0 +1,93 @@
+---
+description: TypeScript, code quality, decomposition, comments, and maintainability standards
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# TypeScript and Code Quality Rules
+
+## TypeScript
+
+- Use TypeScript for application code.
+- Prefer precise types.
+- Avoid `any`.
+- Use `unknown` when the type is genuinely unknown and narrow it safely.
+- Do not use type assertions as a shortcut around understanding the data.
+- Model domain states explicitly when useful.
+- Prefer literal unions where they communicate finite states clearly.
+- Use interfaces/types consistently with the project's established convention.
+- Keep public function inputs and outputs typed.
+- Do not weaken compiler settings simply to make code compile.
+
+## Runtime validation
+
+Remember that TypeScript types are compile-time information.
+
+External input such as:
+- HTTP request bodies,
+- query parameters,
+- headers,
+- uploaded data,
+- database records,
+
+must not be considered trustworthy merely because a TypeScript interface describes them.
+
+Use appropriate runtime validation where required.
+
+## Decomposition
+
+Do not put large amounts of unrelated logic in one file.
+
+Prefer focused:
+- components,
+- hooks,
+- services,
+- controllers,
+- DTOs,
+- utilities,
+- modules,
+
+when there is a genuine separation of responsibility.
+
+Do not split tiny code into meaningless files just to satisfy a line-count rule.
+
+## Comments
+
+Write clean code first.
+
+Comments should explain:
+- why something is non-obvious,
+- an important business rule,
+- a security consideration,
+- a race-condition/concurrency consideration,
+- a non-obvious technical workaround.
+
+Do not add comments that merely restate obvious code.
+
+## Naming
+
+Use descriptive names.
+
+Avoid:
+- `data2`,
+- `temp`,
+- `thing`,
+- `x` for meaningful application values,
+- unexplained abbreviations.
+
+## Error handling
+
+Do not swallow errors.
+
+Handle errors at the appropriate layer and provide useful, safe error information.
+
+Never expose secrets, tokens, passwords, stack traces, or sensitive internal details to users.
+
+## Dependencies
+
+Before adding a dependency:
+
+- check whether existing functionality is sufficient,
+- understand what the dependency provides,
+- consider maintenance/security implications,
+- explain why it is needed if it materially affects architecture.

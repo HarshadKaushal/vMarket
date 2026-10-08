@@ -1,0 +1,82 @@
+---
+description: Frontend architecture, React/TypeScript UI, state, forms, API interaction, and maintainability
+globs: "**/*.{tsx,ts,css,scss}"
+alwaysApply: false
+---
+
+# Frontend Rules
+
+## Technology decisions
+
+Do not introduce a frontend library or framework without understanding what problem it solves.
+
+Keep the selected frontend stack aligned with the project's documented technology decision.
+
+## Components
+
+Prefer small, focused components with clear responsibilities.
+
+Avoid:
+- giant page components,
+- duplicated UI,
+- business logic embedded everywhere in JSX,
+- unnecessary component abstraction.
+
+## State
+
+Distinguish between:
+- local UI state,
+- server/API state,
+- authentication state,
+- derived state.
+
+Do not introduce global state for data that can remain local.
+
+Do not duplicate server data in multiple state stores without a reason.
+
+## API interaction
+
+Frontend validation improves user experience but does not replace backend validation.
+
+Handle:
+- loading,
+- success,
+- empty states,
+- errors,
+- unauthorized responses,
+- expired authentication,
+- network failures where relevant.
+
+Keep API interaction patterns consistent.
+
+## Forms
+
+Forms should have:
+- clear validation,
+- useful error messages,
+- disabled/loading behavior when necessary,
+- safe submission handling,
+- appropriate success/error feedback.
+
+## Authentication
+
+Never assume that hiding a button is authorization.
+
+Backend authorization remains authoritative.
+
+Do not expose secrets or privileged credentials in frontend code.
+
+## Accessibility
+
+Use semantic HTML where appropriate.
+
+Buttons should be buttons.
+Links should be links.
+Form controls should have accessible labels.
+Interactive elements should be keyboard usable.
+
+## UI behavior
+
+Avoid unnecessary client-side complexity.
+
+If a value can be derived from existing state/props, prefer deriving it rather than maintaining a second source of truth.

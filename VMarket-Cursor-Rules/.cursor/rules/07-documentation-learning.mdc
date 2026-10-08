@@ -1,0 +1,64 @@
+---
+description: Project documentation, learning notes, architecture records, and explainability
+alwaysApply: false
+---
+
+# Documentation and Learning Rules
+
+## Documentation is part of the project
+
+The goal is not only a working application.
+
+Maintain enough documentation for the developer to explain:
+
+- system architecture,
+- technology choices,
+- database design,
+- API behavior,
+- authentication,
+- important business rules,
+- major trade-offs,
+- known limitations,
+- important edge cases.
+
+## Technology notes
+
+For each major technology, maintain a short learning/decision note covering:
+
+1. What it is.
+2. What problem it solves.
+3. What alternatives exist.
+4. What VMarket requires.
+5. Why it was selected.
+6. What trade-offs it introduces.
+
+Major technologies include the selected frontend technology, backend framework, database, ORM, Docker, and Git.
+
+## Architecture documentation
+
+Document architecture after decisions are made, not as speculative fiction.
+
+When architecture changes, update the relevant documentation.
+
+## ER diagram
+
+Maintain an ER diagram representing the actual database design.
+
+Do not let the ER diagram and database implementation silently diverge.
+
+## Explainability
+
+When a generated implementation introduces an important concept, provide a concise explanation of:
+
+- what it does,
+- why it is needed,
+- what alternatives exist,
+- what would happen without it.
+
+The developer should be able to explain the code without relying on Cursor.
+
+## Do not over-document
+
+Do not document obvious syntax.
+
+Document decisions, relationships, business rules, and non-obvious behavior.

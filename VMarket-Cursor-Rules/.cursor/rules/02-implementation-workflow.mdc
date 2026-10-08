@@ -1,0 +1,59 @@
+---
+description: Feature implementation workflow and controlled Cursor behavior
+alwaysApply: false
+---
+
+# Implementation Workflow
+
+## Before implementing a feature
+
+For a meaningful feature:
+
+1. Read the relevant existing code.
+2. Identify the affected frontend/backend/database areas.
+3. Explain the intended flow.
+4. Identify edge cases.
+5. Identify security implications.
+6. Identify race-condition/concurrency implications where relevant.
+7. Identify tests needed.
+8. Ask for approval if the change is architectural or materially changes behavior.
+
+## During implementation
+
+- Make small, coherent changes.
+- Preserve existing working behavior unless the change intentionally modifies it.
+- Reuse existing project patterns where appropriate.
+- Do not create duplicate utilities/components/services when an appropriate existing one exists.
+- Keep files focused.
+- Do not mix unrelated refactors into feature work.
+- Do not silently change APIs or database contracts.
+
+## After implementation
+
+Verify:
+
+- TypeScript type checking.
+- Linting if configured.
+- Tests if configured.
+- Build.
+- Relevant runtime behavior.
+- Error paths.
+- Authentication/authorization behavior where relevant.
+- Edge cases.
+
+Report what was changed and what was verified.
+
+## Edge cases
+
+When asked to review edge cases:
+
+- ONLY identify edge cases that belong to the current feature/behavior.
+- Do not invent new features.
+- Do not silently implement the edge cases unless explicitly asked.
+- Clearly separate already-handled cases from unhandled cases.
+
+## No fake completion
+
+Never claim a feature is complete merely because files were generated.
+
+Completion requires verification against the relevant acceptance criteria.

@@ -1,0 +1,86 @@
+---
+description: Backend architecture, API contracts, database design, and data integrity rules
+alwaysApply: false
+---
+
+# Architecture, API, and Database Rules
+
+## Architecture
+
+Keep responsibilities separated.
+
+A typical separation may be:
+
+Controller/HTTP layer
+→ application/business logic
+→ data access
+→ database
+
+But do not force this structure mechanically. Use the simplest structure that keeps responsibilities clear.
+
+## API design
+
+Before implementing a new API:
+
+- define its purpose,
+- input,
+- output,
+- authentication requirements,
+- authorization requirements,
+- validation,
+- failure cases,
+- side effects,
+- idempotency requirements where relevant.
+
+Do not expose internal database models directly when that would create an unsafe or unstable API contract.
+
+## Database
+
+The database schema is a deliberate design decision.
+
+Before implementing meaningful schema changes:
+
+1. Explain the entities.
+2. Explain relationships.
+3. Identify constraints.
+4. Consider uniqueness.
+5. Consider nullability.
+6. Consider indexes.
+7. Consider lifecycle/state transitions.
+8. Consider concurrent operations.
+9. Update the ER diagram/documentation.
+
+The project assignment explicitly requires an original ER diagram. Treat it as part of the deliverable, not an afterthought.
+
+## Data integrity
+
+Do not rely only on frontend checks.
+
+Important business invariants should be enforced at the appropriate backend/database layers.
+
+Examples to reason about:
+
+- invalid product quantities,
+- duplicate records,
+- invalid transfer states,
+- unauthorized shop access,
+- transferring more stock than exists,
+- repeated acceptance of the same request,
+- concurrent requests modifying the same stock.
+
+## Race conditions
+
+Whenever two requests can modify the same business resource:
+
+- identify possible race conditions,
+- explain the failure scenario,
+- use appropriate transactional/locking/constraint mechanisms,
+- test the important concurrency behavior.
+
+Do not assume that frontend disabling of a button prevents race conditions.
+
+## Transactions
+
+Use database transactions when multiple database changes must succeed or fail together to preserve business invariants.
+
+Do not use transactions automatically for every query without understanding why they are required.

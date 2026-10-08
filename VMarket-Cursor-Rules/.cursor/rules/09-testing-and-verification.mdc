@@ -1,0 +1,60 @@
+---
+description: Testing, verification, edge cases, and regression prevention
+alwaysApply: false
+---
+
+# Testing and Verification Rules
+
+## Testing objective
+
+Tests should verify behavior and important business rules, not merely increase coverage numbers.
+
+## Before implementation
+
+For meaningful features, identify:
+- happy path,
+- validation failures,
+- authorization failures,
+- not-found cases,
+- duplicate/repeated operations,
+- boundary values,
+- concurrency/race conditions where applicable.
+
+## Backend tests
+
+Prioritize important business rules and API behavior.
+
+Especially test operations involving:
+- authentication,
+- authorization,
+- stock quantities,
+- product transfers,
+- state transitions,
+- duplicate requests,
+- invalid transitions.
+
+## Frontend tests
+
+Prioritize important user behavior:
+- forms,
+- loading states,
+- error states,
+- authentication-dependent UI,
+- critical workflows.
+
+## Verification after changes
+
+Run the smallest useful verification set first, then broader checks when appropriate.
+
+At minimum, do not knowingly leave:
+- TypeScript errors,
+- build errors,
+- obvious lint errors,
+- broken imports,
+- failing relevant tests.
+
+## Edge-case review
+
+When asked to find edge cases, do not propose unrelated features.
+
+Only identify cases that can occur within the currently implemented behavior.

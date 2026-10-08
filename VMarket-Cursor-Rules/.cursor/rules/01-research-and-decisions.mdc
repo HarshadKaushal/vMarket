@@ -1,0 +1,78 @@
+---
+description: Research, technology selection, architecture decisions, and learning workflow
+alwaysApply: false
+---
+
+# Research and Decision Rules
+
+## Technology selection
+
+When choosing a technology or library:
+
+1. State the requirement it must satisfy.
+2. Identify realistic alternatives.
+3. Explain what each alternative provides.
+4. Compare:
+   - learning curve,
+   - ecosystem,
+   - maintainability,
+   - scalability,
+   - developer experience,
+   - complexity,
+   - TypeScript support,
+   - suitability for VMarket.
+5. Recommend one.
+6. Explain why the recommendation is appropriate.
+7. Do not claim that the most feature-rich option is automatically the best.
+
+## Current vs assignment recommendation
+
+The assignment is the baseline source for requirements and suggested technologies, but technology choices may be researched and changed.
+
+If a recommendation in the assignment is outdated or no longer the preferred approach:
+
+- identify that fact,
+- explain the current alternative,
+- compare them,
+- ask for approval before changing the project direction.
+
+Do not silently replace technologies.
+
+## External research
+
+Prefer:
+- official documentation,
+- primary sources,
+- authoritative technical references,
+- high-quality technical articles.
+
+Avoid relying on videos unless the concept genuinely benefits from video and reliable written documentation is insufficient.
+
+When using external material, do not copy solutions verbatim. Understand the concept and implement the project's own solution.
+
+## Decision records
+
+For significant decisions, maintain a short decision record containing:
+
+- Context
+- Problem
+- Options considered
+- Decision
+- Reasons
+- Trade-offs
+- Consequences
+
+Do not create decision records for trivial implementation details.
+
+## Learning questions
+
+When the developer asks "why", explain the underlying mechanism rather than merely saying that something is a best practice.
+
+Prefer:
+"Here is the problem → here is how the technology solves it → here are alternatives → here is why we choose it."
+
+## No cargo-cult architecture
+
+Do not introduce patterns such as repository, service, factory, adapter, event bus, CQRS, caching, queues, or microservices merely because they are considered "production level."
+
+Introduce them only when there is a concrete problem they solve in this project.
