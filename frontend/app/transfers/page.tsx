@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { loadMyProducts } from "@/lib/products";
 import { loadProfile } from "@/lib/profile";
 import { loadOffers } from "@/lib/transfers";
-import styles from "../page.module.css";
-import { OfferActions } from "./offer-actions";
+import { cn } from "@/lib/utils";
+import { OfferDirectory } from "./offer-directory";
 import { PublishOfferForm } from "./publish-offer-form";
 
 export default async function TransferBoardPage() {
@@ -14,39 +16,34 @@ export default async function TransferBoardPage() {
   ]);
 
   return (
-    <main className={styles.main}>
-      <h1>Transfers</h1>
-      {profile === null ? (
-        <p>
-          <Link href="/login">Log in</Link> to publish or accept an offer.
+    <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8">
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight">Transfers</h1>
+          <Badge variant="secondary">
+            {offers.length === 1 ? "1 open offer" : `${offers.length} open offers`}
+          </Badge>
+        </div>
+        <p className="max-w-2xl text-sm text-muted-foreground">
+          Publish stock you want to move, or accept an offer from another shop.
         </p>
+      </div>
+      {profile === null ? (
+        <div className="flex flex-col items-start gap-3">
+          <p className="text-sm text-muted-foreground">
+            Log in to publish or accept an offer.
+          </p>
+          <Link href="/login" className={cn(buttonVariants(), "no-underline")}>
+            Log in
+          </Link>
+        </div>
       ) : (
         <PublishOfferForm products={products ?? []} />
       )}
-      {offers.length === 0 ? (
-        <p>No open offers.</p>
-      ) : (
-        <ul className={styles.list}>
-          {offers.map((offer) => (
-            <li key={offer.id}>
-              <strong>
-                {offer.productName} from {offer.sourceShopName}
-              </strong>
-              {offer.productDescription.length > 0 ? (
-                <span>{offer.productDescription}</span>
-              ) : null}
-              <span>
-                {offer.quantity} at {offer.unitPrice} each, total{" "}
-                {offer.totalPrice}
-              </span>
-              <OfferActions
-                offer={offer}
-                myShopId={profile === null ? null : profile.shop.id}
-              />
-            </li>
-          ))}
-        </ul>
-      )}
+      <OfferDirectory
+        offers={offers}
+        myShopId={profile === null ? null : profile.shop.id}
+      />
     </main>
   );
 }

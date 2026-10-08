@@ -20,6 +20,7 @@ The assignment text we worked from is [VMarket_Assignment_Requirements_and_Recom
 | Changes the assignment did not ask for | Logged in one place, including concurrent accepts | [beyond-assignment.md](beyond-assignment.md) |
 | Edge cases | Zod, the validation pipe, stock, and concurrent accept | [edge-cases.md](edge-cases.md) |
 | Git pushes | One note per push, with the commits in that push | [pushes/README.md](pushes/README.md) |
+| Controls | shadcn/ui on Tailwind CSS | [ui.md](ui.md) |
 
 ## Working database design
 
@@ -29,7 +30,7 @@ Four tables: Shopkeeper, Shop, Product, Transfer request. A pending request has 
 
 ## Not chosen yet
 
-- UI kit, form library, and a frontend data-fetching library. Those wait until the screens need them.
+- A frontend data-fetching library. Pages still call Nest with `fetch`.
 - Whether a screen can set a request to `rejected`. The value exists on the status list. No database function sets it. Cancel is already a function.
 
 ## Shape of the running system

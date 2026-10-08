@@ -2,14 +2,27 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import styles from "../login/login.module.css";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import type { ShelfProduct } from "@/lib/products";
 import { apiErrorMessage, firstError, formText, productSchema } from "@/lib/validation";
 
 export function ProductEditor({ product }: { product: ShelfProduct }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
+  const [action, setAction] = useState<"save" | "delete" | null>(null);
+  const pending = action !== null;
+  const nameId = `product-${product.id}-name`;
+  const descriptionId = `product-${product.id}-description`;
+  const quantityId = `product-${product.id}-quantity`;
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -27,13 +40,13 @@ export function ProductEditor({ product }: { product: ShelfProduct }) {
       return;
     }
 
-    setPending(true);
+    setAction("save");
     const response = await fetch(`/api/products/${product.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(parsed.data),
     });
-    setPending(false);
+    setAction(null);
 
     if (!response.ok) {
       const body: unknown = await response.json().catch(() => null);
@@ -46,11 +59,11 @@ export function ProductEditor({ product }: { product: ShelfProduct }) {
 
   async function onDelete() {
     setError(null);
-    setPending(true);
+    setAction("delete");
     const response = await fetch(`/api/products/${product.id}`, {
       method: "DELETE",
     });
-    setPending(false);
+    setAction(null);
 
     if (!response.ok) {
       const body: unknown = await response.json().catch(() => null);
@@ -62,35 +75,80 @@ export function ProductEditor({ product }: { product: ShelfProduct }) {
   }
 
   return (
-    <form className={styles.form} onSubmit={onSubmit} noValidate>
-      <label>
-        Name
-        <input name="name" type="text" defaultValue={product.name} />
-      </label>
-      <label>
-        Description
-        <input
-          name="description"
-          type="text"
-          defaultValue={product.description}
-        />
-      </label>
-      <label>
-        Quantity
-        <input
-          name="quantity"
-          type="text"
-          inputMode="numeric"
-          defaultValue={String(product.quantity)}
-        />
-      </label>
-      {error !== null ? <p>{error}</p> : null}
-      <button type="submit" disabled={pending}>
-        {pending ? "Saving…" : "Save"}
-      </button>
-      <button type="button" className="danger" onClick={onDelete} disabled={pending}>
-        Delete
-      </button>
-    </form>
+    <Card className="h-full">
+      <form onSubmit={onSubmit} noValidate>
+        <CardHeader>
+          <CardTitle>Edit product</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <Field
+            id={nameId}
+            name="name"
+            label="Name"
+            defaultValue={product.name}
+          />
+          <Field
+            id={descriptionId}
+            name="description"
+            label="Description"
+            defaultValue={product.description}
+          />
+          <Field
+            id={quantityId}
+            name="quantity"
+            label="Quantity"
+            defaultValue={String(product.quantity)}
+            inputMode="numeric"
+          />
+          {error !== null ? (
+            <p className="text-sm text-destructive" role="alert">
+              {error}
+            </p>
+          ) : null}
+        </CardContent>
+        <CardFooter className="flex-wrap gap-2">
+          <Button type="submit" disabled={pending} className="h-9">
+            {action === "save" ? "Saving…" : "Save"}
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={onDelete}
+            disabled={pending}
+            className="h-9"
+          >
+            {action === "delete" ? "Deleting…" : "Delete"}
+          </Button>
+        </CardFooter>
+      </form>
+    </Card>
+  );
+}
+
+function Field({
+  id,
+  name,
+  label,
+  defaultValue,
+  inputMode,
+}: {
+  id: string;
+  name: string;
+  label: string;
+  defaultValue: string;
+  inputMode?: "numeric" | "decimal" | "text";
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label htmlFor={id}>{label}</Label>
+      <Input
+        id={id}
+        name={name}
+        type="text"
+        inputMode={inputMode}
+        defaultValue={defaultValue}
+        className="h-9"
+      />
+    </div>
   );
 }

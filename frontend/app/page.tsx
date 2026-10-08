@@ -1,42 +1,42 @@
-import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 import { apiUrl } from "@/lib/api";
-import styles from "./page.module.css";
+import { ShopDirectory, type ShopCard } from "./shop-directory";
 
-type Shop = {
-  id: string;
-  name: string;
-  address: string;
-};
-
-async function loadShops(): Promise<Shop[]> {
+async function loadShops(): Promise<ShopCard[]> {
   const response = await fetch(`${apiUrl()}/shops`, { cache: "no-store" });
 
   if (!response.ok) {
     throw new Error("The shop list could not be loaded");
   }
 
-  return response.json() as Promise<Shop[]>;
+  const shops = (await response.json()) as ShopCard[];
+  return shops.map((shop) => ({
+    id: shop.id,
+    name: shop.name,
+    address: shop.address,
+    imageUrl: shop.imageUrl ?? null,
+  }));
 }
 
 export default async function Home() {
   const shops = await loadShops();
 
   return (
-    <main className={styles.main}>
-      <h1>Shops</h1>
-      <p>Choose a shop to see its products.</p>
-      {shops.length === 0 ? (
-        <p>No shops yet.</p>
-      ) : (
-        <ul className={styles.list}>
-          {shops.map((shop) => (
-            <li key={shop.id}>
-              <Link href={`/shops/${shop.id}`}>{shop.name}</Link>
-              <span>{shop.address}</span>
-            </li>
-          ))}
-        </ul>
-      )}
+    <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8">
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Explore Shops
+          </h1>
+          <Badge variant="secondary">
+            {shops.length === 1 ? "1 shop" : `${shops.length} shops`}
+          </Badge>
+        </div>
+        <p className="max-w-2xl text-sm text-muted-foreground">
+          Choose a shop to see what it has on the shelf.
+        </p>
+      </div>
+      <ShopDirectory shops={shops} />
     </main>
   );
 }

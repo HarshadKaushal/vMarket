@@ -2,7 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import styles from "../login/login.module.css";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { apiErrorMessage, firstError, formText, productSchema } from "@/lib/validation";
 
 export function CreateProductForm() {
@@ -46,24 +55,59 @@ export function CreateProductForm() {
   }
 
   return (
-    <form className={styles.form} onSubmit={onSubmit} noValidate>
-      <h2>Add a product</h2>
-      <label>
-        Name
-        <input name="name" type="text" />
-      </label>
-      <label>
-        Description
-        <input name="description" type="text" />
-      </label>
-      <label>
-        Quantity
-        <input name="quantity" type="text" inputMode="numeric" />
-      </label>
-      {error !== null ? <p>{error}</p> : null}
-      <button type="submit" disabled={pending}>
-        {pending ? "Adding…" : "Add product"}
-      </button>
-    </form>
+    <Card>
+      <form onSubmit={onSubmit} noValidate>
+        <CardHeader>
+          <CardTitle>
+            <h2 className="text-base font-semibold">Add a product</h2>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <Field id="create-name" name="name" label="Name" />
+          <Field id="create-description" name="description" label="Description" />
+          <Field
+            id="create-quantity"
+            name="quantity"
+            label="Quantity"
+            inputMode="numeric"
+          />
+          {error !== null ? (
+            <p className="text-sm text-destructive sm:col-span-3" role="alert">
+              {error}
+            </p>
+          ) : null}
+        </CardContent>
+        <CardFooter>
+          <Button type="submit" disabled={pending} className="h-9">
+            {pending ? "Adding…" : "Add product"}
+          </Button>
+        </CardFooter>
+      </form>
+    </Card>
+  );
+}
+
+function Field({
+  id,
+  name,
+  label,
+  inputMode,
+}: {
+  id: string;
+  name: string;
+  label: string;
+  inputMode?: "numeric";
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label htmlFor={id}>{label}</Label>
+      <Input
+        id={id}
+        name={name}
+        type="text"
+        inputMode={inputMode}
+        className="h-9"
+      />
+    </div>
   );
 }

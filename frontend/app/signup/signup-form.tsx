@@ -2,7 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import styles from "../login/login.module.css";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { apiErrorMessage, firstError, formText, signupSchema } from "@/lib/validation";
 
 export function SignupForm() {
@@ -48,39 +50,51 @@ export function SignupForm() {
   }
 
   return (
-    <form className={styles.form} onSubmit={onSubmit} noValidate>
-      <label>
-        Your name
-        <input name="name" type="text" autoComplete="name" />
-      </label>
-      <label>
-        Email
-        <input name="email" type="email" autoComplete="username" />
-      </label>
-      <label>
-        Password
-        <input
-          name="password"
-          type="password"
-          autoComplete="new-password"
-        />
-      </label>
-      <label>
-        Shop name
-        <input name="shopName" type="text" />
-      </label>
-      <label>
-        Address
-        <input name="address" type="text" />
-      </label>
-      <label>
-        Image URL
-        <input name="imageUrl" type="url" />
-      </label>
-      {error !== null ? <p>{error}</p> : null}
-      <button type="submit" disabled={pending}>
+    <form className="flex flex-col gap-4" onSubmit={onSubmit} noValidate>
+      <Field id="name" label="Your name" autoComplete="name" />
+      <Field id="email" label="Email" type="email" autoComplete="username" />
+      <Field
+        id="password"
+        label="Password"
+        type="password"
+        autoComplete="new-password"
+      />
+      <Field id="shopName" label="Shop name" />
+      <Field id="address" label="Address" />
+      <Field id="imageUrl" label="Image URL" type="url" />
+      {error !== null ? (
+        <p className="text-sm text-destructive" role="alert">
+          {error}
+        </p>
+      ) : null}
+      <Button type="submit" disabled={pending} className="h-9 w-full">
         {pending ? "Creating account…" : "Create account"}
-      </button>
+      </Button>
     </form>
+  );
+}
+
+function Field({
+  id,
+  label,
+  type = "text",
+  autoComplete,
+}: {
+  id: string;
+  label: string;
+  type?: string;
+  autoComplete?: string;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label htmlFor={id}>{label}</Label>
+      <Input
+        id={id}
+        name={id}
+        type={type}
+        autoComplete={autoComplete}
+        className="h-9"
+      />
+    </div>
   );
 }

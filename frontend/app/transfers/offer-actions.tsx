@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { apiErrorMessage } from "@/lib/validation";
 import type { OpenOffer } from "@/lib/transfers";
 
@@ -37,25 +38,32 @@ export function OfferActions({
   }
 
   return (
-    <>
+    <div className="flex flex-col items-start gap-2">
       {mine ? (
-        <button
+        <Button
           type="button"
+          variant="outline"
           disabled={pending}
+          className="h-9"
           onClick={() => send(`/api/transfers/${offer.id}/cancel`)}
         >
           {pending ? "Cancelling…" : "Cancel"}
-        </button>
+        </Button>
       ) : (
-        <button
+        <Button
           type="button"
           disabled={pending}
+          className="h-9"
           onClick={() => send(`/api/transfers/${offer.id}/accept`)}
         >
           {pending ? "Accepting…" : "Accept"}
-        </button>
+        </Button>
       )}
-      {error !== null ? <p>{error}</p> : null}
-    </>
+      {error !== null ? (
+        <p className="text-sm text-destructive" role="alert">
+          {error}
+        </p>
+      ) : null}
+    </div>
   );
 }

@@ -2,7 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import styles from "./login.module.css";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { apiErrorMessage, firstError, formText, loginSchema } from "@/lib/validation";
 
 export function LoginForm() {
@@ -45,23 +47,35 @@ export function LoginForm() {
   }
 
   return (
-    <form className={styles.form} onSubmit={onSubmit} noValidate>
-      <label>
-        Email
-        <input name="email" type="email" autoComplete="username" />
-      </label>
-      <label>
-        Password
-        <input
+    <form className="flex flex-col gap-4" onSubmit={onSubmit} noValidate>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="username"
+          className="h-9"
+        />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="password">Password</Label>
+        <Input
+          id="password"
           name="password"
           type="password"
           autoComplete="current-password"
+          className="h-9"
         />
-      </label>
-      {error !== null ? <p>{error}</p> : null}
-      <button type="submit" disabled={pending}>
+      </div>
+      {error !== null ? (
+        <p className="text-sm text-destructive" role="alert">
+          {error}
+        </p>
+      ) : null}
+      <Button type="submit" disabled={pending} className="h-9 w-full">
         {pending ? "Logging in…" : "Log in"}
-      </button>
+      </Button>
     </form>
   );
 }
