@@ -19,6 +19,7 @@ The assignment text we worked from is [VMarket_Assignment_Requirements_and_Recom
 | Form checks | Zod in the browser, class-validator in Nest | The form rejects a bad email or a short password before `fetch`. Nest `ValidationPipe` checks a DTO before the controller, so a request that skips the form is still rejected. |
 | Changes the assignment did not ask for | Logged in one place, including concurrent accepts | [beyond-assignment.md](beyond-assignment.md) |
 | Edge cases | Zod, the validation pipe, stock, and concurrent accept | [edge-cases.md](edge-cases.md) |
+| Git pushes | One note per push, with the commits in that push | [pushes/README.md](pushes/README.md) |
 
 ## Working database design
 
