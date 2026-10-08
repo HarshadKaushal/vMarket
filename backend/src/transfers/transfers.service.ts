@@ -53,6 +53,11 @@ export class TransfersService {
     try {
       const rows = await this.prisma.$queryRaw<TransferRequestRow[]>(
         Prisma.sql`
+          -- Two publishes of one product whose quantities together exceed the shelf.
+          -- create_transfer_request locks that product (FOR UPDATE), then the
+          -- reservation trigger sums pending offers. Shelf 10 and two offers of 8:
+          -- the first insert commits, the waiting one rolls back with
+          -- "pending transfers would exceed stock" (409).
           SELECT *
           FROM create_transfer_request(
             ${shopId}::bigint,
@@ -75,7 +80,10 @@ export class TransfersService {
 
   async listOpen(): Promise<OpenTransfer[]> {
     const rows = await this.prisma.$queryRaw<OpenTransferRow[]>(
-      Prisma.sql`
+        Prisma.sql`
+        -- No lock. Readers do not wait on each other.
+        -- An accept that has not committed yet is still pending here.
+        -- After that accept commits, status is no longer pending, so the offer drops off.
         SELECT
           id,
           source_shop_id,
@@ -110,6 +118,11 @@ export class TransfersService {
     try {
       const rows = await this.prisma.$queryRaw<TransferRequestRow[]>(
         Prisma.sql`
+          -- Two shops accept the same offer, or one accepts while the source cancels.
+          -- accept_transfer_request locks the product, then the offer.
+          -- The first commit sets status to accepted and cuts the shelf quantity.
+          -- The loser finds the offer is no longer pending and rolls back (409).
+          -- A second product row is not inserted, and the quantity is not cut twice.
           SELECT *
           FROM accept_transfer_request(
             ${BigInt(requestId)}::bigint,
@@ -134,6 +147,11 @@ export class TransfersService {
     try {
       const rows = await this.prisma.$queryRaw<TransferRequestRow[]>(
         Prisma.sql`
+          -- Cancel racing an accept of the same offer.
+          -- cancel_transfer_request locks the product first, the same first lock as accept,
+          -- then updates the offer only while status is still pending.
+          -- If accept already committed, this changes zero rows and rolls back
+          -- with "transfer request is no longer pending" (409). Shelf quantity stays put.
           SELECT *
           FROM cancel_transfer_request(
             ${BigInt(requestId)}::bigint,
