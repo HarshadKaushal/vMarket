@@ -21,6 +21,9 @@ The assignment text we worked from is [VMarket_Assignment_Requirements_and_Recom
 | Edge cases | Zod, the validation pipe, stock, and concurrent accept | [edge-cases.md](edge-cases.md) |
 | Git pushes | One note per push, with the commits in that push | [pushes/README.md](pushes/README.md) |
 | Controls | shadcn/ui on Tailwind CSS | [ui.md](ui.md) |
+| How to run it | Host Nest and Next, Compose for Postgres only | [../README.md](../README.md) |
+| What was built | Approach, features, design approach, domain rules | [implementation.md](implementation.md), [features.md](features.md), [design-philosophy.md](design-philosophy.md), [domain.md](domain.md) |
+| AI review of each commit | One note per commit | [ai-reviews/README.md](ai-reviews/README.md) |
 
 ## Working database design
 
