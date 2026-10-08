@@ -24,7 +24,8 @@ The Nest order is middleware (`cookie-parser`), then the JWT guard on protected 
 |---|---|
 | Email with spaces around it, such as `  Meera@Example.com  ` | Zod and the DTO trim and lowercase it to `meera@example.com` before save or lookup. |
 | Email with a space in the middle, such as `meera @example.com` | Zod blocks it in the form. If curl sends it, `@IsEmail()` on `RegisterDto` / `LoginDto` returns 400. The old handwritten check only looked for `@` and a dot, so this used to get stored. |
-| Password shorter than 8 characters | Zod blocks the form. The DTO returns 400. |
+| Password shorter than 8 characters | Zod blocks the form. The DTO returns 400. Spaces around the password are removed first, so a short password padded with spaces still fails. |
+| Password with spaces around it, such as `    Harsh@123` | Zod and the DTO trim it before the hash is saved and before login compares it. A space in the middle stays part of the password. |
 | Blank name, shop name, or address | Zod blocks the form. `@IsNotEmpty()` after trim returns 400. A name of only spaces is blank after trim. |
 | `imageUrl` that is not a URL | Zod blocks the form. `@IsUrl()` returns 400. An empty image becomes `null`. |
 | Extra JSON field, such as `shopkeeperId` | `forbidNonWhitelisted` returns 400. The shop is never taken from the body. |

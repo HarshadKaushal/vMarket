@@ -8,7 +8,8 @@ const email = z
 
 const password = z
   .string()
-  .min(8, "password must be at least 8 characters");
+  .trim()
+  .pipe(z.string().min(8, "password must be at least 8 characters"));
 
 function requiredText(label: string) {
   return z.string().trim().min(1, `${label} is required`);

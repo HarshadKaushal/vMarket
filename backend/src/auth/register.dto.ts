@@ -22,6 +22,9 @@ export class RegisterDto {
   @IsEmail({}, { message: 'email must be an email address' })
   email!: string;
 
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
   @IsString()
   @MinLength(8, { message: 'password must be at least 8 characters' })
   password!: string;
