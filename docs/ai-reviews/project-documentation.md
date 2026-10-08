@@ -1,8 +1,4 @@
-# Project documentation commit
-
-Message: `docs: add the setup guide and the project notes`
-
-The hash is written in `docs/pushes/003-setup-and-notes.md` after this commit exists.
+# 1ee28d8 — docs: add the setup guide and the project notes
 
 ## What the commit contains
 

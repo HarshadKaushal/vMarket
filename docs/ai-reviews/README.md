@@ -15,5 +15,5 @@ Each file is the review written with the AI assistant for one commit. The review
 | `3a3e0ac` | [3a3e0ac.md](3a3e0ac.md) |
 | `ef086b8` | [ef086b8.md](ef086b8.md) |
 | `0ab5d93` | [0ab5d93.md](0ab5d93.md) |
-
-The commit that adds this folder is reviewed in [project-documentation.md](project-documentation.md). Its hash is recorded in the push note, because the hash does not exist until that commit is made.
+| `1ee28d8` | [project-documentation.md](project-documentation.md) |
+| this note | [push-003.md](push-003.md) |
