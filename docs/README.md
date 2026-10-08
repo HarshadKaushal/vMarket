@@ -34,7 +34,7 @@ Four tables: Shopkeeper, Shop, Product, Transfer request. A pending request has 
 ## Not chosen yet
 
 - A frontend data-fetching library. Pages still call Nest with `fetch`.
-- Whether a screen can set a request to `rejected`. The value exists on the status list. No database function sets it. Cancel is already a function.
+- A reject button on a public board offer. `rejected` is set only when the invited shop rejects a private offer.
 
 ## Shape of the running system
 

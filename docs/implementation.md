@@ -29,7 +29,7 @@ The work was split by layer, and each layer had to be explainable before the nex
 | Destination is null until accept | `destination_shop_id` and `destination_product_id` are nullable. |
 | Accept inserts a new product on the destination shop | `accept_transfer_request`. Rows are not merged by name. |
 | Two accepts, or accept against cancel, have one winner | `UPDATE ... WHERE status = 'pending'` after locking the product, then the request. The loser gets 409. |
-| Status values are pending, accepted, rejected, cancelled | Enum `transfer_status`. Nothing in the API sets `rejected`. |
+| Status values are pending, accepted, rejected, cancelled | Enum `transfer_status`. `rejected` is set by `reject_transfer_request` for a private offer. |
 | Browser stays on port 3001 | `rewrites` in `frontend/next.config.ts` send `/api/:path*` to Nest. |
 | Search does not call Nest | `shop-directory.tsx`, `product-directory.tsx`, `offer-directory.tsx` filter the array the page already loaded. |
 
@@ -70,6 +70,6 @@ The first push did not pretend each feature was committed on the day it was writ
 
 - Client-side search is enough for the current lists. It does not scale to a paged catalog, and a shop that is not in the fetched array cannot be found.
 - Copying shadcn components into the repo makes them readable. It also means theme variables for a dark mode that has no switch.
-- Leaving `rejected` unused avoids a second "no" path beside cancel. The enum value is still there, so a later reader can think it is wired up. It is not.
+- `rejected` is only the invited shop's answer to a private offer. A public offer still ends by accept or by the sender cancelling. A third shop cannot reject a board offer.
 - Running Nest and Next on the host makes the cookie rewrite and the SQL functions easy to inspect. It does not meet the assignment's three-container requirement yet.
 - Comments in the query strings document the races without editing a migration that has already been applied.

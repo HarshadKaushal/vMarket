@@ -1,19 +1,39 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import { apiUrl } from "@/lib/api";
 import { loadMyProducts } from "@/lib/products";
 import { loadProfile } from "@/lib/profile";
-import { loadOffers } from "@/lib/transfers";
+import { loadDirectOffers, loadOffers } from "@/lib/transfers";
 import { cn } from "@/lib/utils";
+import { DirectOffers } from "./direct-offers";
 import { OfferDirectory } from "./offer-directory";
 import { PublishOfferForm } from "./publish-offer-form";
 
+type ShopChoice = { id: string; name: string };
+
+async function loadShopChoices(): Promise<ShopChoice[]> {
+  const response = await fetch(`${apiUrl()}/shops`, { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error("The shop list could not be loaded");
+  }
+
+  const shops = (await response.json()) as ShopChoice[];
+  return shops.map((shop) => ({ id: shop.id, name: shop.name }));
+}
+
 export default async function TransferBoardPage() {
-  const [offers, profile, products] = await Promise.all([
+  const [offers, profile, products, shops, directOffers] = await Promise.all([
     loadOffers(),
     loadProfile(),
     loadMyProducts(),
+    loadShopChoices(),
+    loadDirectOffers(),
   ]);
+  const otherShops =
+    profile === null
+      ? []
+      : shops.filter((shop) => shop.id !== profile.shop.id);
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8">
@@ -25,7 +45,7 @@ export default async function TransferBoardPage() {
           </Badge>
         </div>
         <p className="max-w-2xl text-sm text-muted-foreground">
-          Publish stock you want to move, or accept an offer from another shop.
+          Publish stock on the open board, or send a private offer to one shop.
         </p>
       </div>
       {profile === null ? (
@@ -38,8 +58,14 @@ export default async function TransferBoardPage() {
           </Link>
         </div>
       ) : (
-        <PublishOfferForm products={products ?? []} />
+        <PublishOfferForm products={products ?? []} shops={otherShops} />
       )}
+      {profile !== null ? (
+        <DirectOffers
+          incoming={directOffers.incoming}
+          outgoing={directOffers.outgoing}
+        />
+      ) : null}
       <OfferDirectory
         offers={offers}
         myShopId={profile === null ? null : profile.shop.id}

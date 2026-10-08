@@ -62,6 +62,13 @@ export const publishTransferSchema = z.object({
       "unitPrice must be a decimal string with up to 2 decimal places",
     )
     .refine((value) => Number(value) > 0, "unitPrice must be greater than zero"),
+  recipientShopId: z
+    .string()
+    .trim()
+    .refine(
+      (value) => value.length === 0 || /^\d+$/.test(value),
+      "Choose a shop",
+    ),
 });
 
 export function formText(form: FormData, name: string): string {

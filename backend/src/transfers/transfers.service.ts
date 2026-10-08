@@ -14,6 +14,7 @@ export type PublishTransferInput = {
   productId: string;
   quantity: number;
   unitPrice: string;
+  recipientShopId?: string;
 };
 
 export type TransferOffer = {
@@ -40,6 +41,16 @@ export type OpenTransfer = {
   totalPrice: string;
 };
 
+export type DirectTransfer = OpenTransfer & {
+  recipientShopId: string;
+  recipientShopName: string;
+};
+
+export type DirectTransferLists = {
+  incoming: DirectTransfer[];
+  outgoing: DirectTransfer[];
+};
+
 @Injectable()
 export class TransfersService {
   constructor(private readonly prisma: PrismaService) {}
@@ -49,10 +60,9 @@ export class TransfersService {
     input: PublishTransferInput,
   ): Promise<TransferOffer> {
     const shopId = await this.shopIdFor(shopkeeperId);
-
-    try {
-      const rows = await this.prisma.$queryRaw<TransferRequestRow[]>(
-        Prisma.sql`
+    const statement =
+      input.recipientShopId === undefined
+        ? Prisma.sql`
           -- Two publishes of one product whose quantities together exceed the shelf.
           -- create_transfer_request locks that product (FOR UPDATE), then the
           -- reservation trigger sums pending offers. Shelf 10 and two offers of 8:
@@ -65,8 +75,25 @@ export class TransfersService {
             ${input.quantity}::int,
             ${input.unitPrice}::numeric
           )
-        `,
-      );
+        `
+        : Prisma.sql`
+          -- A direct offer reserves the same shelf as a public one.
+          -- create_direct_transfer_request locks the product, then the reservation
+          -- trigger sums every pending row, public and direct.
+          -- Two offers that together exceed the shelf: the first commits, the
+          -- second rolls back with "pending transfers would exceed stock" (409).
+          SELECT *
+          FROM create_direct_transfer_request(
+            ${shopId}::bigint,
+            ${BigInt(input.productId)}::bigint,
+            ${BigInt(input.recipientShopId)}::bigint,
+            ${input.quantity}::int,
+            ${input.unitPrice}::numeric
+          )
+        `;
+
+    try {
+      const rows = await this.prisma.$queryRaw<TransferRequestRow[]>(statement);
       const created = rows[0];
       if (created === undefined) {
         throw new InternalServerErrorException('Transfer request was not created');
@@ -84,6 +111,7 @@ export class TransfersService {
         -- No lock. Readers do not wait on each other.
         -- An accept that has not committed yet is still pending here.
         -- After that accept commits, status is no longer pending, so the offer drops off.
+        -- Direct offers have a recipient and are excluded by this view.
         SELECT
           id,
           source_shop_id,
@@ -112,17 +140,28 @@ export class TransfersService {
     }));
   }
 
+  async listDirect(shopkeeperId: string): Promise<DirectTransferLists> {
+    const shopId = await this.shopIdFor(shopkeeperId);
+    const [incoming, outgoing] = await Promise.all([
+      this.listDirectSide(shopId, 'incoming'),
+      this.listDirectSide(shopId, 'outgoing'),
+    ]);
+
+    return { incoming, outgoing };
+  }
+
   async accept(shopkeeperId: string, requestId: string): Promise<TransferOffer> {
     const shopId = await this.shopIdFor(shopkeeperId);
 
     try {
       const rows = await this.prisma.$queryRaw<TransferRequestRow[]>(
         Prisma.sql`
-          -- Two shops accept the same offer, or one accepts while the source cancels.
+          -- Two shops accept the same public offer, or one accepts while the source cancels.
+          -- On a direct offer the same lock handles accept against reject or cancel.
           -- accept_transfer_request locks the product, then the offer.
           -- The first commit sets status to accepted and cuts the shelf quantity.
           -- The loser finds the offer is no longer pending and rolls back (409).
-          -- A second product row is not inserted, and the quantity is not cut twice.
+          -- A shop that was not invited gets "not found" (404), not a confirmation the row exists.
           SELECT *
           FROM accept_transfer_request(
             ${BigInt(requestId)}::bigint,
@@ -147,10 +186,10 @@ export class TransfersService {
     try {
       const rows = await this.prisma.$queryRaw<TransferRequestRow[]>(
         Prisma.sql`
-          -- Cancel racing an accept of the same offer.
-          -- cancel_transfer_request locks the product first, the same first lock as accept,
-          -- then updates the offer only while status is still pending.
-          -- If accept already committed, this changes zero rows and rolls back
+          -- Cancel racing an accept, or a direct reject, of the same offer.
+          -- cancel_transfer_request locks the product first, the same first lock as accept
+          -- and reject, then updates the offer only while status is still pending.
+          -- If the other action already committed, this changes zero rows and rolls back
           -- with "transfer request is no longer pending" (409). Shelf quantity stays put.
           SELECT *
           FROM cancel_transfer_request(
@@ -168,6 +207,88 @@ export class TransfersService {
     } catch (error: unknown) {
       throw mapTransferError(error);
     }
+  }
+
+  async reject(shopkeeperId: string, requestId: string): Promise<TransferOffer> {
+    const shopId = await this.shopIdFor(shopkeeperId);
+
+    try {
+      const rows = await this.prisma.$queryRaw<TransferRequestRow[]>(
+        Prisma.sql`
+          -- Reject racing accept or cancel on the same direct offer.
+          -- reject_transfer_request locks the product first, then sets rejected
+          -- only while the row is still pending and the caller is the invited shop.
+          -- The first commit wins. The loser rolls back with
+          -- "transfer request is no longer pending" (409). Stock does not move.
+          -- A public offer, or a shop that was not invited, is "not found" (404).
+          SELECT *
+          FROM reject_transfer_request(
+            ${BigInt(requestId)}::bigint,
+            ${shopId}::bigint
+          )
+        `,
+      );
+      const rejected = rows[0];
+      if (rejected === undefined) {
+        throw new InternalServerErrorException('Transfer request was not rejected');
+      }
+
+      return toTransferOffer(rejected);
+    } catch (error: unknown) {
+      throw mapTransferError(error);
+    }
+  }
+
+  private async listDirectSide(
+    shopId: bigint,
+    side: 'incoming' | 'outgoing',
+  ): Promise<DirectTransfer[]> {
+    const where =
+      side === 'incoming'
+        ? Prisma.sql`transfer_requests.recipient_shop_id = ${shopId}::bigint`
+        : Prisma.sql`transfer_requests.source_shop_id = ${shopId}::bigint
+            AND transfer_requests.recipient_shop_id IS NOT NULL`;
+
+    const rows = await this.prisma.$queryRaw<DirectTransferRow[]>(
+      Prisma.sql`
+        -- No lock. Pending direct rows only, and only for the caller's shop.
+        -- An accept, reject, or cancel that has not committed is still listed.
+        -- After it commits, status is no longer pending, so the row drops off.
+        SELECT
+          transfer_requests.id,
+          transfer_requests.source_shop_id,
+          source_shop.name AS source_shop_name,
+          transfer_requests.recipient_shop_id,
+          recipient_shop.name AS recipient_shop_name,
+          transfer_requests.source_product_id,
+          products.name AS product_name,
+          products.description AS product_description,
+          transfer_requests.quantity,
+          transfer_requests.unit_price,
+          transfer_requests.total_price
+        FROM transfer_requests
+        JOIN shops AS source_shop ON source_shop.id = transfer_requests.source_shop_id
+        JOIN shops AS recipient_shop ON recipient_shop.id = transfer_requests.recipient_shop_id
+        JOIN products ON products.id = transfer_requests.source_product_id
+        WHERE transfer_requests.status = 'pending'
+          AND ${where}
+        ORDER BY transfer_requests.id
+      `,
+    );
+
+    return rows.map((row) => ({
+      id: idString(row.id),
+      sourceShopId: idString(row.source_shop_id),
+      sourceShopName: row.source_shop_name,
+      recipientShopId: idString(row.recipient_shop_id),
+      recipientShopName: row.recipient_shop_name,
+      sourceProductId: idString(row.source_product_id),
+      productName: row.product_name,
+      productDescription: row.product_description,
+      quantity: row.quantity,
+      unitPrice: money(row.unit_price),
+      totalPrice: money(row.total_price),
+    }));
   }
 
   private async shopIdFor(shopkeeperId: string): Promise<bigint> {
@@ -194,6 +315,11 @@ type TransferRequestRow = {
   unit_price: unknown;
   total_price: unknown;
   status: string;
+};
+
+type DirectTransferRow = OpenTransferRow & {
+  recipient_shop_id: unknown;
+  recipient_shop_name: string;
 };
 
 type OpenTransferRow = {
@@ -258,6 +384,14 @@ function mapTransferError(error: unknown): Error {
 
   if (message.includes('source shop cannot accept its own request')) {
     return new ForbiddenException('Source shop cannot accept its own request');
+  }
+
+  if (message.includes('cannot send a direct request to your own shop')) {
+    return new ForbiddenException('You cannot send a direct request to your own shop');
+  }
+
+  if (message.includes('recipient shop not found')) {
+    return new NotFoundException('Shop not found');
   }
 
   if (message.includes('not enough stock')) {

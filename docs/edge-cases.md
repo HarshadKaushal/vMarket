@@ -68,6 +68,11 @@ The form and the buttons:
 | Cancel someone else's offer | The button is not shown. The SQL function looks up the offer by id and source shop, so Nest returns 404. |
 | Cancel or accept when the offer is no longer pending | 409 "Transfer request is no longer pending". Cancel does not move stock. |
 | Second accept of the same offer | 409. Quantities change only for the accept that won. |
+| Private offer with a `recipientShopId` | The row is pending, names that shop, and is excluded from `open_transfer_board`. It still reserves shelf quantity with the other pending rows. |
+| Private offer to your own shop | 403. |
+| Accept or reject a private offer when you are not the invited shop | 404. The response does not confirm that the row exists. |
+| Reject a public offer | 404. Reject matches `recipient_shop_id`, and a public offer has none. |
+| Accept, reject, and cancel of one private offer | All three lock the product first, then change the row only while it is pending. One commits. The others get 409. Reject and cancel do not move stock. |
 
 ## Concurrency
 
